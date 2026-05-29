@@ -115,23 +115,26 @@ Use the `localhost` URL instead of opening the HTML file directly. The backend i
 
 ## Screenshots
 
-Add screenshots here before publishing the repository:
+### Overview Dashboard
 
-```md
 ![Overview Dashboard](docs/screenshots/overview.png)
+
+### Risk Lab
+
 ![Risk Lab](docs/screenshots/risk-lab.png)
+
+### Monte Carlo Simulator
+
 ![Monte Carlo Simulator](docs/screenshots/monte-carlo.png)
+
+### Portfolio Diagnosis
+
 ![Portfolio Diagnosis](docs/screenshots/portfolio-diagnosis.png)
-```
 
-Suggested screenshot pages:
+Additional screenshot ideas:
 
-- Overview dashboard
 - Build Portfolio tab
-- Risk Lab charts
 - Historical Stress Testing
-- Monte Carlo projections
-- Portfolio Diagnosis report
 - Education / Glossary tab
 
 ## Quantitative Methodology
