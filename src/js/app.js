@@ -18,6 +18,8 @@ const state = {
 
 const RISK_LABELS = ['Very Low','Low','Moderate','High','Very High'];
 const STORAGE_KEY = 'portfolioiq:v2';
+const SCREENER_CACHE_KEY = 'portfolioiq:screenerMetrics:v1';
+const SCREENER_CACHE_MS = 24 * 60 * 60 * 1000;
 
 // ========== KNOWN STOCKS DB ==========
 const STOCKS_DB = [
@@ -1598,6 +1600,8 @@ let SCREENER_DATA = [
   ...BRAZIL_MARKET_STOCKS.map(({t,n,s,mc,pe,div,h52})=>({t,n,s,mc,pe,div,h52})),
 ];
 
+let screenerMetricCache = {};
+
 async function loadScreenerUniverse(){
   try{
     const res=await fetch('/api/universe',{cache:'no-store'});
@@ -1621,63 +1625,204 @@ async function loadScreenerUniverse(){
   }
 }
 
-function runScreener(){
-  const sector=document.getElementById('screen-sector').value;
-  const minCap=parseFloat(document.getElementById('screen-cap').value)||0;
-  const maxRisk=parseFloat(document.getElementById('screen-risk').value)||999;
-  const sortBy=document.getElementById('screen-sort').value;
+function loadScreenerMetricCache(){
+  try{
+    const raw=localStorage.getItem(SCREENER_CACHE_KEY);
+    screenerMetricCache=raw?JSON.parse(raw):{};
+  }catch(e){
+    screenerMetricCache={};
+  }
+}
 
-  const rfr=parseFloat(document.getElementById('rfr-slider').value)/100||0.045;
-  const estimates={
-    AAPL:[0.20,0.23],MSFT:[0.18,0.21],NVDA:[0.28,0.35],GOOGL:[0.17,0.24],META:[0.19,0.29],AMZN:[0.18,0.30],TSLA:[0.24,0.46],
-    JPM:[0.14,0.21],V:[0.13,0.19],MA:[0.14,0.20],'BRK-B':[0.11,0.16],C:[0.15,0.24],
-    JNJ:[0.08,0.14],LLY:[0.20,0.27],UNH:[0.12,0.18],XOM:[0.13,0.24],CVX:[0.12,0.22],WMT:[0.10,0.15],COST:[0.13,0.18],
+function saveScreenerMetricCache(){
+  try{
+    localStorage.setItem(SCREENER_CACHE_KEY,JSON.stringify(screenerMetricCache));
+  }catch(e){
+    console.warn('Could not persist screener metric cache',e);
+  }
+}
+
+function screenerCacheKey(ticker,period){
+  return `${ticker}:${period}`;
+}
+
+function getCachedScreenerMetric(ticker,period){
+  const cached=screenerMetricCache[screenerCacheKey(ticker,period)];
+  if(!cached)return null;
+  if(cached.asOf&&Date.now()-new Date(cached.asOf).getTime()>SCREENER_CACHE_MS)return null;
+  if(cached.error)return cached;
+  return cached;
+}
+
+function metricsFromPriceRows(ticker,rows,period){
+  const {series,skipped}=priceToReturnSeries(rows);
+  if(series.length<30){
+    return{ticker,period,error:'Insufficient historical data',dataPoints:series.length,asOf:new Date().toISOString()};
+  }
+  const annReturn=annualizedReturn(series);
+  const annVol=annualizedVolatility(series);
+  const maxDD=maxDrawdown(series);
+  return{
+    ticker,period,source:'live',annReturn,annVol,maxDD,
+    cumulative:compoundReturn(series),
+    dataPoints:series.length,
+    skipped,
+    asOf:new Date().toISOString(),
   };
-  let results=SCREENER_DATA.map(s=>{
-    const cached=state.stockCache[s.t];
-    const est=estimates[s.t]||[0.10,0.22];
-    const annReturn=cached?.annReturn ?? est[0];
-    const annVol=cached?.annVol ?? est[1];
-    const sharpe=annVol>0?(annReturn-rfr)/annVol:0;
-    return{...s,annReturn,annVol,sharpe,riskLabel:getVolatilityBadge(annVol).label};
+}
+
+function getScreenerMetric(ticker,period,rfr){
+  const portfolioMetric=state.stockCache[ticker];
+  if(portfolioMetric?.returnSeries?.length){
+    return{
+      source:'portfolio',
+      annReturn:portfolioMetric.annReturn,
+      annVol:portfolioMetric.annVol,
+      sharpe:portfolioMetric.annVol>0?(portfolioMetric.annReturn-rfr)/portfolioMetric.annVol:0,
+      dataPoints:portfolioMetric.returnSeries.length,
+    };
+  }
+  const cached=getCachedScreenerMetric(ticker,period);
+  if(cached&&!cached.error){
+    return{
+      ...cached,
+      sharpe:cached.annVol>0?(cached.annReturn-rfr)/cached.annVol:0,
+    };
+  }
+  return cached||null;
+}
+
+async function fetchAndCacheScreenerMetric(stock,period){
+  try{
+    const rows=await fetchYahooData(stock.t,period);
+    const metric=metricsFromPriceRows(stock.t,rows||[],period);
+    screenerMetricCache[screenerCacheKey(stock.t,period)]=metric;
+    return metric;
+  }catch(e){
+    const metric={ticker:stock.t,period,error:e.message||'Data unavailable',asOf:new Date().toISOString()};
+    screenerMetricCache[screenerCacheKey(stock.t,period)]=metric;
+    return metric;
+  }
+}
+
+async function fetchScreenerMetrics(candidates,period,onProgress){
+  const missing=candidates.filter(s=>!getCachedScreenerMetric(s.t,period)&&!state.stockCache[s.t]?.returnSeries?.length);
+  let completed=0;
+  const concurrency=5;
+  for(let i=0;i<missing.length;i+=concurrency){
+    const batch=missing.slice(i,i+concurrency);
+    await Promise.all(batch.map(async stock=>{
+      await fetchAndCacheScreenerMetric(stock,period);
+      completed++;
+      if(onProgress)onProgress(completed,missing.length,stock.t);
+    }));
+    await yieldToBrowser();
+  }
+  if(missing.length)saveScreenerMetricCache();
+  return missing.length;
+}
+
+function buildScreenerResults(candidates,rfr,maxRisk,period){
+  return candidates.map(s=>{
+    const metric=getScreenerMetric(s.t,period,rfr);
+    const annReturn=metric?.annReturn;
+    const annVol=metric?.annVol;
+    const sharpe=Number.isFinite(metric?.sharpe)?metric.sharpe:(annVol>0?(annReturn-rfr)/annVol:null);
+    return{
+      ...s,
+      annReturn:Number.isFinite(annReturn)?annReturn:null,
+      annVol:Number.isFinite(annVol)?annVol:null,
+      sharpe:Number.isFinite(sharpe)?sharpe:null,
+      metricSource:metric?.source||'unavailable',
+      metricError:metric?.error||'',
+      dataPoints:metric?.dataPoints||0,
+    };
   }).filter(s=>{
-    if(sector&&s.s!==sector)return false;
-    if(s.mc<minCap)return false;
-    if(s.annVol*100>maxRisk)return false;
+    if(maxRisk<999&&s.annVol!=null&&s.annVol*100>maxRisk)return false;
+    if(maxRisk<999&&s.annVol==null)return false;
     return true;
   });
+}
 
-  if(sortBy==='peRatio') results.sort((a,b)=>a.pe-b.pe);
-  else if(sortBy==='dividendYield') results.sort((a,b)=>b.div-a.div);
-  else if(sortBy==='52wHigh') results.sort((a,b)=>b.h52-a.h52);
-  else if(sortBy==='riskLow') results.sort((a,b)=>a.annVol-b.annVol);
-  else if(sortBy==='riskHigh') results.sort((a,b)=>b.annVol-a.annVol);
-  else if(sortBy==='sharpe') results.sort((a,b)=>b.sharpe-a.sharpe);
-  else if(sortBy==='return') results.sort((a,b)=>b.annReturn-a.annReturn);
-  else results.sort((a,b)=>b.mc-a.mc);
+function sortScreenerResults(results,sortBy){
+  const numeric=(value,missing=-Infinity)=>Number.isFinite(value)?value:missing;
+  if(sortBy==='peRatio') results.sort((a,b)=>numeric(a.pe,Infinity)-numeric(b.pe,Infinity));
+  else if(sortBy==='dividendYield') results.sort((a,b)=>numeric(b.div)-numeric(a.div));
+  else if(sortBy==='52wHigh') results.sort((a,b)=>numeric(b.h52)-numeric(a.h52));
+  else if(sortBy==='riskLow') results.sort((a,b)=>numeric(a.annVol,Infinity)-numeric(b.annVol,Infinity));
+  else if(sortBy==='riskHigh') results.sort((a,b)=>numeric(b.annVol)-numeric(a.annVol));
+  else if(sortBy==='sharpe') results.sort((a,b)=>numeric(b.sharpe)-numeric(a.sharpe));
+  else if(sortBy==='return') results.sort((a,b)=>numeric(b.annReturn)-numeric(a.annReturn));
+  else results.sort((a,b)=>numeric(b.mc)-numeric(a.mc));
+  return results;
+}
 
+function metricSourceBadge(source,error){
+  if(source==='live')return metricBadge('Live','emerald');
+  if(source==='portfolio')return metricBadge('Portfolio','teal');
+  if(error)return metricBadge('No Data','amber');
+  return metricBadge('Loading','amber');
+}
+
+function renderScreenerTable(results,{loading=false,progressText='',period='2y'}={}){
   const el=document.getElementById('screener-results');
-  if(!results.length){el.innerHTML='<div class="empty-state">No stocks match your criteria</div>';return;}
-
-  let html=`<div class="card"><table><thead><tr><th>Ticker</th><th>Company</th><th>Sector</th><th>Market Cap</th><th>Exp. Return</th><th>Risk</th><th>Sharpe</th><th>P/E</th><th>Dividend</th><th>Action</th></tr></thead><tbody>`;
+  if(!results.length){
+    el.innerHTML='<div class="empty-state">No stocks match your criteria</div>';
+    return;
+  }
+  let html=`<div class="card">`;
+  if(loading)html+=`<div class="loading" style="margin-bottom:12px"><div class="spinner"></div>${escapeHtml(progressText||'Fetching live historical metrics...')}</div>`;
+  html+=`<table><thead><tr><th>Ticker</th><th>Company</th><th>Sector</th><th>Market Cap</th><th>Ann. Return</th><th>Risk</th><th>Sharpe</th><th>Data</th><th>P/E</th><th>Dividend</th><th>Action</th></tr></thead><tbody>`;
   results.forEach(s=>{
     const mc=s.mc>=1e12?'$'+(s.mc/1e12).toFixed(1)+'T':s.mc>=1e9?'$'+(s.mc/1e9).toFixed(0)+'B':'$'+(s.mc/1e6).toFixed(0)+'M';
-    const riskBadge=getVolatilityBadge(s.annVol);
+    const riskBadge=s.annVol==null?null:getVolatilityBadge(s.annVol);
     html+=`<tr>
       <td class="mono" style="color:var(--accent)">${s.t}</td>
       <td>${s.n}</td>
       <td><span class="tag" style="background:var(--bg4);color:var(--text2)">${s.s}</span></td>
       <td class="mono">${mc}</td>
-      <td class="mono ${s.annReturn>=0?'pos':'neg'}">${fmtPct(s.annReturn*100)}</td>
-      <td>${metricBadge(fmtPctPlain(s.annVol*100)+' '+riskBadge.label,riskBadge.tone)}</td>
-      <td class="mono ${s.sharpe>=1?'pos':s.sharpe>=0.5?'neu':'neg'}">${fmtNum(s.sharpe)}</td>
+      <td class="mono ${s.annReturn==null?'neu':s.annReturn>=0?'pos':'neg'}">${s.annReturn==null?'—':fmtPct(s.annReturn*100)}</td>
+      <td>${riskBadge?metricBadge(fmtPctPlain(s.annVol*100)+' '+riskBadge.label,riskBadge.tone):'<span class="neu">—</span>'}</td>
+      <td class="mono ${s.sharpe==null?'neu':s.sharpe>=1?'pos':s.sharpe>=0.5?'neu':'neg'}">${s.sharpe==null?'—':fmtNum(s.sharpe)}</td>
+      <td>${metricSourceBadge(s.metricSource,s.metricError)}${s.dataPoints?`<div class="footnote">${s.dataPoints} days</div>`:''}</td>
       <td class="mono">${s.pe||'—'}</td>
       <td class="mono ${s.div>2?'pos':''}">${s.div?s.div.toFixed(1)+'%':'—'}</td>
       <td><button class="btn btn-outline btn-sm" onclick="quickAddFromScreener('${s.t}')">+ Add</button> <button class="btn btn-ghost btn-sm" onclick="addToWatchlist('${s.t}')">Watch</button></td>
     </tr>`;
   });
-  html+='</tbody></table><div class="footnote">Risk and return use cached historical metrics when available, otherwise conservative built-in estimates for fast screening.</div></div>';
+  html+=`</tbody></table><div class="footnote">Return, risk, and Sharpe use live Yahoo historical data for ${escapeHtml(periodLabel(period))} when available and are cached locally for 24 hours. Rows marked No Data could not be calculated reliably.</div></div>`;
   el.innerHTML=html;
+}
+
+async function runScreener(){
+  const sector=document.getElementById('screen-sector').value;
+  const minCap=parseFloat(document.getElementById('screen-cap').value)||0;
+  const maxRisk=parseFloat(document.getElementById('screen-risk').value)||999;
+  const sortBy=document.getElementById('screen-sort').value;
+  const period=document.getElementById('period-select')?.value||'2y';
+  const rfr=parseFloat(document.getElementById('rfr-slider').value)/100||0.045;
+  const btn=document.querySelector('#panel-screener .btn-primary');
+  if(btn){btn.disabled=true;btn.textContent='Fetching live metrics...';}
+  await loadScreenerUniverse();
+
+  const candidates=SCREENER_DATA.filter(s=>{
+    if(sector&&s.s!==sector)return false;
+    if(s.mc<minCap)return false;
+    return true;
+  });
+
+  let results=sortScreenerResults(buildScreenerResults(candidates,rfr,maxRisk,period),sortBy);
+  renderScreenerTable(results,{loading:true,progressText:'Fetching live historical metrics...',period});
+
+  await fetchScreenerMetrics(candidates,period,(done,total,ticker)=>{
+    if(btn)btn.textContent=`Fetching live metrics... ${done}/${total}`;
+    const progress=document.querySelector('#screener-results .loading');
+    if(progress)progress.innerHTML=`<div class="spinner"></div>Fetching live metrics... ${done}/${total} (${escapeHtml(ticker)})`;
+  });
+
+  results=sortScreenerResults(buildScreenerResults(candidates,rfr,maxRisk,period),sortBy);
+  renderScreenerTable(results,{period});
+  if(btn){btn.disabled=false;btn.textContent='🔍 Screen Stocks';}
 }
 
 async function quickAddFromScreener(ticker,name){
@@ -2702,6 +2847,7 @@ document.getElementById('period-select').addEventListener('change',saveState);
 updateRiskLabel(3);
 renderQuickStocks();
 checkBackendStatus();
+loadScreenerMetricCache();
 loadScreenerUniverse();
 loadState();
 renderWeightSliders();
