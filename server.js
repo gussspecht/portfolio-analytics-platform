@@ -18,6 +18,47 @@ const MIME = {
 const cache = new Map();
 const CACHE_MS = 5 * 60 * 1000;
 
+const BRAZIL_MARKET_UNIVERSE = [
+  {t:'ABEV3.SA',n:'Ambev ON',s:'Consumer Defensive',mc:35e9,pe:14,div:6,h52:15},
+  {t:'BBAS3.SA',n:'Banco do Brasil ON',s:'Financial Services',mc:33e9,pe:5,div:9,h52:33},
+  {t:'B3SA3.SA',n:'B3 Brasil Bolsa Balcao ON',s:'Financial Services',mc:14e9,pe:15,div:4,h52:15},
+  {t:'BPAC11.SA',n:'BTG Pactual Units',s:'Financial Services',mc:32e9,pe:14,div:2,h52:38},
+  {t:'SANB11.SA',n:'Santander Brasil Units',s:'Financial Services',mc:20e9,pe:14,div:5,h52:33},
+  {t:'BBSE3.SA',n:'BB Seguridade ON',s:'Financial Services',mc:13e9,pe:9,div:8,h52:37},
+  {t:'ELET3.SA',n:'Eletrobras ON',s:'Utilities',mc:18e9,pe:8,div:1,h52:46},
+  {t:'ELET6.SA',n:'Eletrobras PNB',s:'Utilities',mc:15e9,pe:8,div:1,h52:50},
+  {t:'EQTL3.SA',n:'Equatorial Energia ON',s:'Utilities',mc:12e9,pe:20,div:1,h52:36},
+  {t:'SBSP3.SA',n:'Sabesp ON',s:'Utilities',mc:12e9,pe:12,div:1.5,h52:100},
+  {t:'CMIG4.SA',n:'Cemig PN',s:'Utilities',mc:6e9,pe:6,div:8,h52:15},
+  {t:'TAEE11.SA',n:'Taesa Units',s:'Utilities',mc:4e9,pe:8,div:8,h52:38},
+  {t:'PRIO3.SA',n:'PRIO ON',s:'Energy',mc:8e9,pe:12,div:0,h52:55},
+  {t:'UGPA3.SA',n:'Ultrapar ON',s:'Energy',mc:5e9,pe:14,div:2,h52:32},
+  {t:'VBBR3.SA',n:'Vibra Energia ON',s:'Energy',mc:5e9,pe:10,div:4,h52:28},
+  {t:'SUZB3.SA',n:'Suzano ON',s:'Materials',mc:15e9,pe:8,div:2,h52:65},
+  {t:'GGBR4.SA',n:'Gerdau PN',s:'Materials',mc:8e9,pe:6,div:6,h52:28},
+  {t:'CSNA3.SA',n:'CSN ON',s:'Materials',mc:4e9,pe:8,div:4,h52:22},
+  {t:'USIM5.SA',n:'Usiminas PNA',s:'Materials',mc:2e9,pe:7,div:3,h52:12},
+  {t:'KLBN11.SA',n:'Klabin Units',s:'Materials',mc:7e9,pe:12,div:4,h52:24},
+  {t:'EMBR3.SA',n:'Embraer ON',s:'Industrials',mc:7e9,pe:28,div:0,h52:55},
+  {t:'RAIL3.SA',n:'Rumo ON',s:'Industrials',mc:7e9,pe:24,div:0.5,h52:26},
+  {t:'RENT3.SA',n:'Localiza ON',s:'Consumer Cyclical',mc:9e9,pe:22,div:1,h52:70},
+  {t:'LREN3.SA',n:'Lojas Renner ON',s:'Consumer Cyclical',mc:3e9,pe:16,div:3,h52:20},
+  {t:'MGLU3.SA',n:'Magazine Luiza ON',s:'Consumer Cyclical',mc:1e9,pe:0,div:0,h52:16},
+  {t:'ASAI3.SA',n:'Assai ON',s:'Consumer Defensive',mc:3e9,pe:14,div:0,h52:16},
+  {t:'CRFB3.SA',n:'Carrefour Brasil ON',s:'Consumer Defensive',mc:3e9,pe:12,div:2,h52:13},
+  {t:'RADL3.SA',n:'Raia Drogasil ON',s:'Healthcare',mc:10e9,pe:30,div:1,h52:30},
+  {t:'HAPV3.SA',n:'Hapvida ON',s:'Healthcare',mc:5e9,pe:0,div:0,h52:6},
+  {t:'VIVT3.SA',n:'Telefonica Brasil ON',s:'Communication Services',mc:15e9,pe:14,div:5,h52:56},
+  {t:'TIMS3.SA',n:'TIM Brasil ON',s:'Communication Services',mc:8e9,pe:13,div:5,h52:20},
+  {t:'TOTS3.SA',n:'Totvs ON',s:'Technology',mc:4e9,pe:28,div:1,h52:35},
+  {t:'LWSA3.SA',n:'Locaweb ON',s:'Technology',mc:0.5e9,pe:0,div:0,h52:6},
+  {t:'JBSS3.SA',n:'JBS ON',s:'Consumer Defensive',mc:14e9,pe:10,div:5,h52:42},
+  {t:'BRFS3.SA',n:'BRF ON',s:'Consumer Defensive',mc:5e9,pe:18,div:0,h52:25},
+  {t:'BOVA11.SA',n:'iShares Ibovespa ETF',s:'ETF',mc:8e9,pe:0,div:0,h52:145},
+  {t:'SMAL11.SA',n:'iShares Small Cap ETF',s:'ETF',mc:1e9,pe:0,div:0,h52:130},
+  {t:'IVVB11.SA',n:'S&P 500 Brazil ETF',s:'ETF',mc:2e9,pe:0,div:0,h52:380},
+];
+
 const UNIVERSE = [
   {t:'AAPL',n:'Apple',s:'Technology',mc:3e12,pe:29.5,div:0.5,h52:237},{t:'MSFT',n:'Microsoft',s:'Technology',mc:3.1e12,pe:35.2,div:0.7,h52:468},
   {t:'NVDA',n:'NVIDIA',s:'Technology',mc:3.3e12,pe:55.1,div:0.03,h52:149},{t:'GOOGL',n:'Alphabet',s:'Technology',mc:2.2e12,pe:23.8,div:0,h52:207},
@@ -45,6 +86,7 @@ const UNIVERSE = [
   {t:'PETR4.SA',n:'Petrobras PN',s:'Energy',mc:95e9,pe:5,div:12,h52:44},{t:'VALE3.SA',n:'Vale ON',s:'Materials',mc:55e9,pe:7,div:7,h52:78},
   {t:'ITUB4.SA',n:'Itaú Unibanco PN',s:'Financial Services',mc:70e9,pe:9,div:5,h52:36},{t:'BBDC4.SA',n:'Bradesco PN',s:'Financial Services',mc:30e9,pe:8,div:4,h52:17},
   {t:'WEGE3.SA',n:'WEG ON',s:'Industrials',mc:35e9,pe:32,div:1.4,h52:46},
+  ...BRAZIL_MARKET_UNIVERSE,
 ];
 
 function send(res, status, body, headers = {}) {

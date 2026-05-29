@@ -45,6 +45,49 @@ const STOCKS_DB = [
   {t:'BTC-USD',n:'Bitcoin USD',s:'crypto'},{t:'ETH-USD',n:'Ethereum USD',s:'crypto'},
 ];
 
+const BRAZIL_MARKET_STOCKS = [
+  {t:'ABEV3.SA',n:'Ambev ON',s:'Consumer Defensive',searchSector:'consumer',mc:35e9,pe:14,div:6,h52:15},
+  {t:'BBAS3.SA',n:'Banco do Brasil ON',s:'Financial Services',searchSector:'finance',mc:33e9,pe:5,div:9,h52:33},
+  {t:'B3SA3.SA',n:'B3 Brasil Bolsa Balcao ON',s:'Financial Services',searchSector:'finance',mc:14e9,pe:15,div:4,h52:15},
+  {t:'BPAC11.SA',n:'BTG Pactual Units',s:'Financial Services',searchSector:'finance',mc:32e9,pe:14,div:2,h52:38},
+  {t:'SANB11.SA',n:'Santander Brasil Units',s:'Financial Services',searchSector:'finance',mc:20e9,pe:14,div:5,h52:33},
+  {t:'BBSE3.SA',n:'BB Seguridade ON',s:'Financial Services',searchSector:'finance',mc:13e9,pe:9,div:8,h52:37},
+  {t:'ELET3.SA',n:'Eletrobras ON',s:'Utilities',searchSector:'utilities',mc:18e9,pe:8,div:1,h52:46},
+  {t:'ELET6.SA',n:'Eletrobras PNB',s:'Utilities',searchSector:'utilities',mc:15e9,pe:8,div:1,h52:50},
+  {t:'EQTL3.SA',n:'Equatorial Energia ON',s:'Utilities',searchSector:'utilities',mc:12e9,pe:20,div:1,h52:36},
+  {t:'SBSP3.SA',n:'Sabesp ON',s:'Utilities',searchSector:'utilities',mc:12e9,pe:12,div:1.5,h52:100},
+  {t:'CMIG4.SA',n:'Cemig PN',s:'Utilities',searchSector:'utilities',mc:6e9,pe:6,div:8,h52:15},
+  {t:'TAEE11.SA',n:'Taesa Units',s:'Utilities',searchSector:'utilities',mc:4e9,pe:8,div:8,h52:38},
+  {t:'PRIO3.SA',n:'PRIO ON',s:'Energy',searchSector:'energy',mc:8e9,pe:12,div:0,h52:55},
+  {t:'UGPA3.SA',n:'Ultrapar ON',s:'Energy',searchSector:'energy',mc:5e9,pe:14,div:2,h52:32},
+  {t:'VBBR3.SA',n:'Vibra Energia ON',s:'Energy',searchSector:'energy',mc:5e9,pe:10,div:4,h52:28},
+  {t:'SUZB3.SA',n:'Suzano ON',s:'Materials',searchSector:'materials',mc:15e9,pe:8,div:2,h52:65},
+  {t:'GGBR4.SA',n:'Gerdau PN',s:'Materials',searchSector:'materials',mc:8e9,pe:6,div:6,h52:28},
+  {t:'CSNA3.SA',n:'CSN ON',s:'Materials',searchSector:'materials',mc:4e9,pe:8,div:4,h52:22},
+  {t:'USIM5.SA',n:'Usiminas PNA',s:'Materials',searchSector:'materials',mc:2e9,pe:7,div:3,h52:12},
+  {t:'KLBN11.SA',n:'Klabin Units',s:'Materials',searchSector:'materials',mc:7e9,pe:12,div:4,h52:24},
+  {t:'EMBR3.SA',n:'Embraer ON',s:'Industrials',searchSector:'industrial',mc:7e9,pe:28,div:0,h52:55},
+  {t:'RAIL3.SA',n:'Rumo ON',s:'Industrials',searchSector:'industrial',mc:7e9,pe:24,div:0.5,h52:26},
+  {t:'RENT3.SA',n:'Localiza ON',s:'Consumer Cyclical',searchSector:'consumer',mc:9e9,pe:22,div:1,h52:70},
+  {t:'LREN3.SA',n:'Lojas Renner ON',s:'Consumer Cyclical',searchSector:'consumer',mc:3e9,pe:16,div:3,h52:20},
+  {t:'MGLU3.SA',n:'Magazine Luiza ON',s:'Consumer Cyclical',searchSector:'consumer',mc:1e9,pe:0,div:0,h52:16},
+  {t:'ASAI3.SA',n:'Assai ON',s:'Consumer Defensive',searchSector:'consumer',mc:3e9,pe:14,div:0,h52:16},
+  {t:'CRFB3.SA',n:'Carrefour Brasil ON',s:'Consumer Defensive',searchSector:'consumer',mc:3e9,pe:12,div:2,h52:13},
+  {t:'RADL3.SA',n:'Raia Drogasil ON',s:'Healthcare',searchSector:'health',mc:10e9,pe:30,div:1,h52:30},
+  {t:'HAPV3.SA',n:'Hapvida ON',s:'Healthcare',searchSector:'health',mc:5e9,pe:0,div:0,h52:6},
+  {t:'VIVT3.SA',n:'Telefonica Brasil ON',s:'Communication Services',searchSector:'communication',mc:15e9,pe:14,div:5,h52:56},
+  {t:'TIMS3.SA',n:'TIM Brasil ON',s:'Communication Services',searchSector:'communication',mc:8e9,pe:13,div:5,h52:20},
+  {t:'TOTS3.SA',n:'Totvs ON',s:'Technology',searchSector:'tech',mc:4e9,pe:28,div:1,h52:35},
+  {t:'LWSA3.SA',n:'Locaweb ON',s:'Technology',searchSector:'tech',mc:0.5e9,pe:0,div:0,h52:6},
+  {t:'JBSS3.SA',n:'JBS ON',s:'Consumer Defensive',searchSector:'consumer',mc:14e9,pe:10,div:5,h52:42},
+  {t:'BRFS3.SA',n:'BRF ON',s:'Consumer Defensive',searchSector:'consumer',mc:5e9,pe:18,div:0,h52:25},
+  {t:'BOVA11.SA',n:'iShares Ibovespa ETF',s:'ETF',searchSector:'etf',mc:8e9,pe:0,div:0,h52:145},
+  {t:'SMAL11.SA',n:'iShares Small Cap ETF',s:'ETF',searchSector:'etf',mc:1e9,pe:0,div:0,h52:130},
+  {t:'IVVB11.SA',n:'S&P 500 Brazil ETF',s:'ETF',searchSector:'etf',mc:2e9,pe:0,div:0,h52:380},
+];
+
+STOCKS_DB.push(...BRAZIL_MARKET_STOCKS.map(s=>({t:s.t,n:s.n,s:s.searchSector})));
+
 const SECTOR_COLORS = ['#3b82f6','#10b981','#8b5cf6','#f59e0b','#ec4899','#06b6d4','#84cc16','#f97316','#ef4444','#14b8a6'];
 
 // ========== UTILITIES ==========
@@ -1552,6 +1595,7 @@ let SCREENER_DATA = [
   {t:'BRK-B',n:'Berkshire',s:'Financial Services',mc:1.05e12,pe:21.4,div:0,h52:505},
   {t:'MA',n:'Mastercard',s:'Financial Services',mc:498e9,pe:38.2,div:0.6,h52:574},
   {t:'TSLA',n:'Tesla',s:'Technology',mc:1.1e12,pe:180.5,div:0,h52:488},
+  ...BRAZIL_MARKET_STOCKS.map(({t,n,s,mc,pe,div,h52})=>({t,n,s,mc,pe,div,h52})),
 ];
 
 async function loadScreenerUniverse(){
