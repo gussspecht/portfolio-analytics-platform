@@ -77,12 +77,22 @@ The project is designed as a Finance + Statistics portfolio intelligence platfor
 
 ```text
 PortfolioIQ/
-├── portfolio_analytics_platform.html   # Main frontend application
+├── index.html                          # Main frontend entry point
+├── portfolio_analytics_platform.html   # Compatibility entry point for the old local URL
+├── src/
+│   ├── css/
+│   │   └── styles.css                  # Extracted app styles
+│   └── js/
+│       └── app.js                      # Extracted vanilla JavaScript app logic
+├── docs/
+│   └── screenshots/                    # README screenshots
 ├── server.js                           # Local Node backend and Yahoo Finance proxy
 ├── package.json                        # npm start script
 ├── README.md                           # Project documentation
 └── .gitignore                          # Local/generated file exclusions
 ```
+
+The app is still vanilla HTML/CSS/JavaScript. The refactor only separates the entry HTML, CSS, and JavaScript into clearer files; it does not introduce React, TypeScript, Vite, or any framework.
 
 ## How to Run Locally
 
@@ -108,10 +118,10 @@ npm start
 3. Open the app:
 
 ```text
-http://localhost:4173/portfolio_analytics_platform.html
+http://localhost:4173/index.html
 ```
 
-Use the `localhost` URL instead of opening the HTML file directly. The backend is needed because browsers block direct Yahoo Finance requests from frontend JavaScript.
+Use the `localhost` URL instead of opening the HTML file directly. The backend is needed because browsers block direct Yahoo Finance requests from frontend JavaScript. The older `/portfolio_analytics_platform.html` URL is still kept as a compatibility entry point.
 
 ## Screenshots
 

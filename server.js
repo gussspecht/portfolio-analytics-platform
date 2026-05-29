@@ -171,7 +171,7 @@ async function handleAI(req, res) {
 }
 
 async function serveStatic(req, res, url) {
-  const requested = url.pathname === '/' ? '/portfolio_analytics_platform.html' : decodeURIComponent(url.pathname);
+  const requested = url.pathname === '/' ? '/index.html' : decodeURIComponent(url.pathname);
   const filePath = path.normalize(path.join(ROOT, requested));
   if (!filePath.startsWith(ROOT)) {
     res.writeHead(403);
@@ -216,5 +216,5 @@ const server = http.createServer(async (req, res) => {
 });
 
 server.listen(PORT, () => {
-  console.log(`PortfolioIQ running at http://localhost:${PORT}/portfolio_analytics_platform.html`);
+  console.log(`PortfolioIQ running at http://localhost:${PORT}/index.html`);
 });
