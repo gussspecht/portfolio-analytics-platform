@@ -117,25 +117,45 @@ Use the `localhost` URL instead of opening the HTML file directly. The backend i
 
 ### Overview Dashboard
 
-![Overview Dashboard](docs/screenshots/overview.png)
+<p align="center">
+  <img src="docs/screenshots/overview.png" alt="Overview Dashboard" width="780">
+</p>
+
+### Build Portfolio
+
+<p align="center">
+  <img src="docs/screenshots/build-portfolio.png" alt="Build Portfolio" width="780">
+</p>
 
 ### Risk Lab
 
-![Risk Lab](docs/screenshots/risk-lab.png)
+<p align="center">
+  <img src="docs/screenshots/risk-lab.png" alt="Risk Lab" width="780">
+</p>
+
+### Historical Stress Testing
+
+<p align="center">
+  <img src="docs/screenshots/stress-test.png" alt="Historical Stress Testing" width="780">
+</p>
 
 ### Monte Carlo Simulator
 
-![Monte Carlo Simulator](docs/screenshots/monte-carlo.png)
+<p align="center">
+  <img src="docs/screenshots/monte-carlo.png" alt="Monte Carlo Simulator" width="780">
+</p>
 
 ### Portfolio Diagnosis
 
-![Portfolio Diagnosis](docs/screenshots/portfolio-diagnosis.png)
+<p align="center">
+  <img src="docs/screenshots/portfolio-diagnosis.png" alt="Portfolio Diagnosis" width="780">
+</p>
 
-Additional screenshot ideas:
+### Education Center
 
-- Build Portfolio tab
-- Historical Stress Testing
-- Education / Glossary tab
+<p align="center">
+  <img src="docs/screenshots/education.png" alt="Education Center" width="780">
+</p>
 
 ## Quantitative Methodology
 
