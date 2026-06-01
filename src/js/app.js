@@ -817,50 +817,36 @@ async function runComparison(){
 }
 
 // ========== SCREENER ==========
-let SCREENER_DATA = [
-  {t:'AAPL',n:'Apple',s:'Technology',mc:3e12,pe:29.5,div:0.5,h52:237},
-  {t:'MSFT',n:'Microsoft',s:'Technology',mc:3.1e12,pe:35.2,div:0.7,h52:468},
-  {t:'NVDA',n:'NVIDIA',s:'Technology',mc:3.3e12,pe:55.1,div:0.03,h52:149},
-  {t:'GOOGL',n:'Alphabet',s:'Technology',mc:2.2e12,pe:23.8,div:0,h52:207},
-  {t:'META',n:'Meta',s:'Technology',mc:1.5e12,pe:28.4,div:0.5,h52:740},
-  {t:'AMZN',n:'Amazon',s:'Technology',mc:2.3e12,pe:45.2,div:0,h52:242},
-  {t:'JPM',n:'JPMorgan',s:'Financial Services',mc:688e9,pe:13.2,div:2.2,h52:288},
-  {t:'V',n:'Visa',s:'Financial Services',mc:620e9,pe:32.5,div:0.8,h52:321},
-  {t:'JNJ',n:'Johnson & Johnson',s:'Healthcare',mc:384e9,pe:15.8,div:3.1,h52:168},
-  {t:'LLY',n:'Eli Lilly',s:'Healthcare',mc:780e9,pe:55.9,div:0.7,h52:972},
-  {t:'UNH',n:'UnitedHealth',s:'Healthcare',mc:502e9,pe:22.3,div:1.6,h52:613},
-  {t:'XOM',n:'ExxonMobil',s:'Energy',mc:488e9,pe:14.2,div:3.4,h52:126},
-  {t:'CVX',n:'Chevron',s:'Energy',mc:267e9,pe:15.1,div:4.2,h52:169},
-  {t:'WMT',n:'Walmart',s:'Consumer Cyclical',mc:782e9,pe:38.5,div:1.0,h52:96},
-  {t:'COST',n:'Costco',s:'Consumer Cyclical',mc:387e9,pe:54.2,div:0.7,h52:1077},
-  {t:'BRK-B',n:'Berkshire',s:'Financial Services',mc:1.05e12,pe:21.4,div:0,h52:505},
-  {t:'MA',n:'Mastercard',s:'Financial Services',mc:498e9,pe:38.2,div:0.6,h52:574},
-  {t:'TSLA',n:'Tesla',s:'Technology',mc:1.1e12,pe:180.5,div:0,h52:488},
-  ...BRAZIL_MARKET_STOCKS.map(({t,n,s,mc,pe,div,h52})=>({t,n,s,mc,pe,div,h52})),
-];
+let SCREENER_DATA = [];
 
 let screenerMetricCache = {};
 
 async function loadScreenerUniverse(){
+  const sources = ['/api/universe','src/data/stockUniverse.json'];
   try{
-    const res=await fetch('/api/universe',{cache:'no-store'});
-    if(!res.ok)return;
-    const data=await res.json();
-    if(Array.isArray(data.universe)&&data.universe.length>SCREENER_DATA.length){
-      SCREENER_DATA=data.universe;
-      const existing=new Set(STOCKS_DB.map(s=>s.t));
-      data.universe.forEach(s=>{
-        if(!existing.has(s.t)){
-          STOCKS_DB.push({t:s.t,n:s.n,s:(s.s||'').toLowerCase().split(' ')[0]||'stock'});
-          existing.add(s.t);
-        }
-      });
-      renderQuickStocks();
-      renderWatchlist();
-      renderOverviewMetrics();
+    let data=null;
+    for(const source of sources){
+      try{
+        const res=await fetch(source,{cache:'no-store'});
+        if(res.ok){data=await res.json();break;}
+      }catch(e){}
     }
+    if(!data)return;
+    if(Array.isArray(data.universe))SCREENER_DATA=data.universe;
+    if(Array.isArray(data.search)){
+      STOCKS_DB.splice(0,STOCKS_DB.length,...data.search);
+    }else if(Array.isArray(data.universe)){
+      STOCKS_DB.splice(0,STOCKS_DB.length,...data.universe.map(s=>({
+        t:s.t,
+        n:s.n,
+        s:(s.searchSector||s.s||'').toLowerCase().split(' ')[0]||'stock',
+      })));
+    }
+    renderQuickStocks();
+    renderWatchlist();
+    renderOverviewMetrics();
   } catch(e){
-    console.warn('Using bundled screener universe',e);
+    console.warn('Could not load stock universe',e);
   }
 }
 

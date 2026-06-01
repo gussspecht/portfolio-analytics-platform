@@ -70,6 +70,7 @@ The project is designed as a Finance + Statistics portfolio intelligence platfor
 - **Charts:** Chart.js
 - **Backend:** Node.js HTTP server
 - **Data Source:** Yahoo Finance chart endpoint through the local backend
+- **Stock Universe:** Shared `src/data/stockUniverse.json` used by both frontend and backend
 - **Storage:** Browser localStorage
 - **Architecture:** Single-page local web app with a lightweight local data proxy
 
@@ -82,9 +83,11 @@ PortfolioIQ/
 ├── src/
 │   ├── css/
 │   │   └── styles.css                  # Extracted app styles
+│   ├── data/
+│   │   └── stockUniverse.json          # Shared frontend/backend stock universe
 │   └── js/
 │       ├── app.js                      # Main UI orchestration, events, tabs, screener, reports
-│       ├── state.js                    # Shared app state, constants, and stock metadata
+│       ├── state.js                    # Shared app state and constants
 │       ├── data/
 │       │   └── yahoo.js                # Yahoo Finance data fetching helpers
 │       ├── ui/
@@ -230,9 +233,11 @@ The diagnosis system is deterministic and rule-based. It collects calculated met
 ## Data Notes
 
 - Market data is requested from Yahoo Finance through the local backend.
+- The stock/search universe lives in `src/data/stockUniverse.json`; `/api/universe` serves the same file so the frontend and backend do not maintain separate ticker lists.
 - Some tickers may have limited history or missing observations.
 - Brazil tickers, crypto assets, ETFs, and US equities may have different trading calendars.
 - The app shows warnings when data coverage is weak or insufficient.
+- Portfolio Diagnosis runs fully locally with deterministic rules. There is no OpenAI, ChatGPT, or external AI API dependency in the main app or backend.
 
 ## Financial Disclaimer
 
