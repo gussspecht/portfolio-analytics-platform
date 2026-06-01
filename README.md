@@ -10,11 +10,13 @@ The project is designed as a Finance + Statistics portfolio intelligence platfor
   - Add stocks, ETFs, Brazil tickers, and crypto tickers.
   - Set allocation weights and rebalance holdings.
   - Persist portfolio state locally between sessions.
+  - Flags mixed USD/BRL listed exposure and explains FX limitations.
 
 - **Overview Dashboard**
   - Portfolio value, cumulative return, annualized return, annualized volatility, and Sharpe ratio.
   - Health score, allocation view, benchmark snapshot, income estimate, and holdings table.
   - Plain-English badges for return quality, risk level, and Sharpe quality.
+  - Auto-suggests a better benchmark, such as BOVA11.SA for Brazil-heavy portfolios or QQQ for technology-heavy portfolios.
 
 - **Risk Lab**
   - Annualized return and volatility.
@@ -131,6 +133,18 @@ Or:
 npm start
 ```
 
+Run validation checks:
+
+```bash
+npm run check
+```
+
+Run finance/statistics tests only:
+
+```bash
+npm test
+```
+
 3. Open the app:
 
 ```text
@@ -145,12 +159,6 @@ Use the `localhost` URL instead of opening the HTML file directly. The backend i
 
 <p align="center">
   <img src="docs/screenshots/overview.png" alt="Overview Dashboard" width="780">
-</p>
-
-### Build Portfolio
-
-<p align="center">
-  <img src="docs/screenshots/build-portfolio.png" alt="Build Portfolio" width="780">
 </p>
 
 ### Risk Lab
@@ -174,13 +182,7 @@ Use the `localhost` URL instead of opening the HTML file directly. The backend i
 ### Portfolio Diagnosis
 
 <p align="center">
-  <img src="docs/screenshots/portfolio-diagnosis.png" alt="Portfolio Diagnosis" width="780">
-</p>
-
-### Education Center
-
-<p align="center">
-  <img src="docs/screenshots/education.png" alt="Education Center" width="780">
+  <img src="docs/screenshots/diagnosis.png" alt="Portfolio Diagnosis" width="780">
 </p>
 
 ## Quantitative Methodology
@@ -202,6 +204,10 @@ Asset prices are converted into daily return series. Portfolio returns are calcu
 - **Beta / Alpha:** Benchmark-relative sensitivity and return efficiency.
 - **HHI:** Concentration measure based on squared portfolio weights.
 - **Diversification Score:** A simplified score based on concentration and spread of exposures.
+
+### Automated Checks
+
+The repository includes lightweight Node-based checks for annualized return, volatility, Sharpe ratio, Sortino ratio, max drawdown, date-aligned portfolio returns, Monte Carlo percentile logic, stress-window alignment, and currency-warning logic.
 
 ### Risk Lab
 
@@ -236,6 +242,8 @@ The diagnosis system is deterministic and rule-based. It collects calculated met
 - The stock/search universe lives in `src/data/stockUniverse.json`; `/api/universe` serves the same file so the frontend and backend do not maintain separate ticker lists.
 - Some tickers may have limited history or missing observations.
 - Brazil tickers, crypto assets, ETFs, and US equities may have different trading calendars.
+- PortfolioIQ treats `.SA` tickers as BRL-listed and regular US tickers / `*-USD` crypto as USD-listed for warning purposes. It does not fully FX-convert all holdings into a single base currency.
+- Benchmark selection is heuristic: Brazil-heavy portfolios are compared against BOVA11.SA by default, technology/growth-heavy portfolios against QQQ, and broad US portfolios against SPY or VTI.
 - The app shows warnings when data coverage is weak or insufficient.
 - Portfolio Diagnosis runs fully locally with deterministic rules. There is no OpenAI, ChatGPT, or external AI API dependency in the main app or backend.
 

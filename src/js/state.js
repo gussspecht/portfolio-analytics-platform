@@ -17,6 +17,7 @@ const state = {
   aiSectors: new Set(['tech','finance','health','etf']),
   watchlist: [],
   initialInvestment: 10000,
+  manualBenchmarkSelection: false,
 };
 
 const RISK_LABELS = ['Very Low','Low','Moderate','High','Very High'];

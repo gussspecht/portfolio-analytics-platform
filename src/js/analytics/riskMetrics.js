@@ -191,6 +191,7 @@ function getPortfolioAnalytics(validStocks=state.portfolio.filter(p=>state.stock
   const cumulative=compoundReturn(portfolioReturnSeries);
   const hhi=hhiConcentration(weights);
   const diversification=diversificationScore(hhi);
+  const currencyExposure=calculateCurrencyExposure(validStocks,weights);
   const contributions=validStocks.map((p,i)=>({
     ticker:p.ticker,
     contribution:compoundReturn(aligned.assetReturnsByTicker[p.ticker])*weights[i],
@@ -199,9 +200,10 @@ function getPortfolioAnalytics(validStocks=state.portfolio.filter(p=>state.stock
     ...excluded.map(p=>`${p.ticker}: excluded from portfolio metrics because no valid return series is available.`),
     ...aligned.warnings,
     ...validStocks.flatMap(p=>state.stockCache[p.ticker]?.warnings||[]),
+    ...getCurrencyWarnings(currencyExposure),
   ];
 
-  return{validStocks,weights,portfolioReturns,portfolioReturnSeries,portfolioDates:aligned.dates,assetReturnsByTicker:aligned.assetReturnsByTicker,annReturn,annVol,sharpe,sortino,maxDD,cumulative,hhi,diversification,contributions,warnings};
+  return{validStocks,weights,portfolioReturns,portfolioReturnSeries,portfolioDates:aligned.dates,assetReturnsByTicker:aligned.assetReturnsByTicker,annReturn,annVol,sharpe,sortino,maxDD,cumulative,hhi,diversification,currencyExposure,contributions,warnings};
 }
 
 

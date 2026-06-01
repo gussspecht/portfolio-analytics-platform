@@ -5,7 +5,8 @@
   "private": true,
   "scripts": {
     "start": "node server.js",
-    "check": "node -c server.js && node -e \"const d=require('./src/data/stockUniverse.json'); if(!Array.isArray(d.search)||!Array.isArray(d.universe)) process.exit(1)\" && for f in src/js/state.js src/js/utils/formatting.js src/js/data/yahoo.js src/js/ui/charts.js src/js/analytics/*.js src/js/app.js; do node -c \"$f\"; done"
+    "test": "node tests/financeMetrics.test.js",
+    "check": "node -c server.js && node -e \"const d=require('./src/data/stockUniverse.json'); if(!Array.isArray(d.search)||!Array.isArray(d.universe)) process.exit(1)\" && for f in src/js/state.js src/js/utils/formatting.js src/js/data/yahoo.js src/js/ui/charts.js src/js/analytics/*.js src/js/app.js tests/*.js; do node -c \"$f\"; done && node tests/financeMetrics.test.js"
   },
   "keywords": [
     "portfolio",

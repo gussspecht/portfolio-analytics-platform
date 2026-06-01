@@ -76,7 +76,10 @@ function loadState(){
       }
       if(saved.settings.rfr)document.getElementById('rfr-slider').value=saved.settings.rfr;
       if(saved.settings.rfr)document.getElementById('rfr-val').textContent=parseFloat(saved.settings.rfr).toFixed(1)+'%';
-      if(saved.settings.benchmark)document.getElementById('benchmark-select').value=saved.settings.benchmark;
+      if(saved.settings.benchmark){
+        document.getElementById('benchmark-select').value=saved.settings.benchmark;
+        state.manualBenchmarkSelection=saved.settings.benchmark!=='SPY';
+      }
       if(saved.settings.period)document.getElementById('period-select').value=saved.settings.period;
     }
     state.portfolio=(saved.portfolio||[]).map(p=>({
@@ -566,7 +569,7 @@ async function renderBenchmarkSnapshot(analytics){
     el.innerHTML='<div class="empty-state" style="padding:16px">Choose a benchmark in Build Portfolio</div>';
     return;
   }
-  const benchmark=document.getElementById('benchmark-select').value||'SPY';
+  const benchmark=selectRecommendedBenchmark(analytics);
   const period=document.getElementById('period-select').value||'2y';
   el.innerHTML='<div class="loading" style="padding:8px 0"><div class="spinner"></div>Loading benchmark...</div>';
   try{
@@ -590,10 +593,31 @@ async function renderBenchmarkSnapshot(analytics){
       <div class="metric"><div class="metric-label">Beta</div><div class="metric-val">${bBeta==null?'—':fmtNum(bBeta)}</div></div>
       <div class="metric"><div class="metric-label">Alpha</div><div class="metric-val ${alpha==null?'neu':alpha>=0?'pos':'neg'}">${alpha==null?'—':fmtPct(alpha*100)}</div></div>
     </div>
-    <div class="footnote">Compared with ${benchmark} over the selected historical period.</div>`;
+    <div class="footnote">Compared with ${benchmark} over the selected historical period. ${benchmarkRecommendationNote(analytics)}</div>`;
   }catch(e){
     el.innerHTML='<div class="error-msg">Could not calculate benchmark snapshot.</div>';
   }
+}
+
+function benchmarkRecommendationNote(analytics){
+  if(!analytics)return '';
+  const rec=recommendBenchmarkFromExposure(analytics.currencyExposure,analytics.validStocks);
+  return rec?.ticker?`Suggested benchmark: ${rec.ticker} for ${rec.reason}.`:'';
+}
+
+function selectRecommendedBenchmark(analytics){
+  const select=document.getElementById('benchmark-select');
+  if(!select)return 'SPY';
+  const current=select.value||'SPY';
+  if(!analytics||state.manualBenchmarkSelection)return current;
+  const rec=recommendBenchmarkFromExposure(analytics.currencyExposure,analytics.validStocks);
+  if(rec?.ticker&&rec.ticker!==current){
+    select.value=rec.ticker;
+    state.benchmarkCache={};
+    saveState();
+    return rec.ticker;
+  }
+  return current;
 }
 
 function renderRebalanceSuggestions(analytics){
@@ -669,7 +693,7 @@ async function renderHiddenConcentration(analytics,targetId='hidden-concentratio
 async function updateBenchmarkBeta(analytics){
   const el=document.getElementById('ins-beta');
   if(!el||!analytics){return;}
-  const benchmark=document.getElementById('benchmark-select').value||'SPY';
+  const benchmark=selectRecommendedBenchmark(analytics);
   const period=document.getElementById('period-select').value||'2y';
   const key=benchmark+':'+period;
   try{
@@ -1080,7 +1104,7 @@ function riskMetricCard(title,value,explanation,diagnostic,tone='neu'){
 }
 
 async function getRiskLabBenchmarkSeries(){
-  const benchmark=document.getElementById('benchmark-select').value||'SPY';
+  const benchmark=selectRecommendedBenchmark(getPortfolioAnalytics());
   const period=document.getElementById('period-select').value||'2y';
   const key=benchmark+':'+period+':risklab';
   if(!state.benchmarkCache[key]){
@@ -1224,7 +1248,7 @@ Method Notes
 
 // ========== INIT ==========
 document.getElementById('rfr-slider').addEventListener('change',()=>{renderOverviewMetrics();saveState();});
-document.getElementById('benchmark-select').addEventListener('change',()=>{renderOverviewMetrics();saveState();});
+document.getElementById('benchmark-select').addEventListener('change',()=>{state.manualBenchmarkSelection=true;renderOverviewMetrics();saveState();});
 document.getElementById('period-select').addEventListener('change',saveState);
 updateRiskLabel(3);
 renderQuickStocks();

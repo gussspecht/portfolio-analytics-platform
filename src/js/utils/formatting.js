@@ -70,6 +70,73 @@ function clamp(n,min,max){return Math.max(min,Math.min(max,n));}
 function getMeta(ticker){
   return SCREENER_DATA.find(s=>s.t===ticker)||STOCKS_DB.find(s=>s.t===ticker)||{t:ticker,n:ticker,s:'Unknown',mc:0,pe:0,div:0,h52:0};
 }
+function inferTickerCurrency(ticker){
+  const t=String(ticker||'').toUpperCase();
+  if(t.endsWith('.SA'))return 'BRL';
+  if(t.endsWith('-USD'))return 'USD';
+  return 'USD';
+}
+function inferEconomicExposure(ticker){
+  const t=String(ticker||'').toUpperCase();
+  if(t==='IVVB11.SA')return 'USD equity exposure through a BRL-listed ETF';
+  if(t.endsWith('.SA'))return 'Brazil/BRL local-market exposure';
+  if(t.endsWith('-USD'))return 'USD crypto exposure';
+  return 'US/USD market exposure';
+}
+function calculateCurrencyExposure(validStocks,weights){
+  const byCurrency={};
+  const byEconomicExposure={};
+  (validStocks||[]).forEach((p,i)=>{
+    const w=weights?.[i]??0;
+    const currency=inferTickerCurrency(p.ticker);
+    const economic=inferEconomicExposure(p.ticker);
+    byCurrency[currency]=(byCurrency[currency]||0)+w;
+    byEconomicExposure[economic]=(byEconomicExposure[economic]||0)+w;
+  });
+  const currencyEntries=Object.entries(byCurrency).sort((a,b)=>b[1]-a[1]);
+  const economicEntries=Object.entries(byEconomicExposure).sort((a,b)=>b[1]-a[1]);
+  return {
+    weights:weights||[],
+    byCurrency,
+    byEconomicExposure,
+    currencyEntries,
+    economicEntries,
+    primaryCurrency:currencyEntries[0]?.[0]||'USD',
+    hasMixedCurrencies:currencyEntries.filter(([,w])=>w>0.05).length>1,
+    brlListedWeight:byCurrency.BRL||0,
+    usdListedWeight:byCurrency.USD||0,
+  };
+}
+function getCurrencyWarnings(exposure){
+  if(!exposure)return [];
+  const warnings=[];
+  if(exposure.hasMixedCurrencies){
+    warnings.push(`Currency exposure notice: this portfolio mixes ${exposure.currencyEntries.map(([c,w])=>`${c} ${fmtPctPlain(w*100)}`).join(', ')} listed assets. PortfolioIQ currently analyzes local price returns and does not convert all holdings into one base currency, so FX moves can affect real results.`);
+  }
+  if(exposure.brlListedWeight>0.2&&exposure.usdListedWeight>0.2){
+    warnings.push('FX risk notice: BRL-listed Brazilian assets and USD-listed assets may move differently because of exchange-rate changes, local rates, inflation, and country risk.');
+  }
+  const ivvbWeight=exposure.byEconomicExposure['USD equity exposure through a BRL-listed ETF']||0;
+  if(ivvbWeight>0.05){
+    warnings.push(`IVVB11.SA notice: ${fmtPctPlain(ivvbWeight*100)} is BRL-listed but tracks US equity exposure, so both S&P 500 movement and BRL/USD exchange rates can influence returns.`);
+  }
+  return warnings;
+}
+function recommendBenchmarkFromExposure(exposure,validStocks=[]){
+  const tickers=new Set((validStocks||[]).map(p=>p.ticker));
+  const brl=exposure?.brlListedWeight||0;
+  const techGrowth=(validStocks||[]).reduce((sum,p,i)=>{
+    const meta=getMeta(p.ticker);
+    const sector=String(meta.s||'').toLowerCase();
+    const isGrowth=['QQQ','ARKK','NVDA','AAPL','MSFT','GOOGL','META','AMZN','TSLA','AMD','AVGO'].includes(p.ticker)||sector.includes('tech');
+    return sum+(isGrowth?(exposure?.weights?.[i]||0):0);
+  },0);
+  if(brl>=0.5)return {ticker:'BOVA11.SA',reason:'Brazil-heavy portfolio'};
+  if(tickers.has('IVVB11.SA')&&brl>=0.25)return {ticker:'IVVB11.SA',reason:'Brazil-listed US equity ETF exposure'};
+  if(techGrowth>=0.55)return {ticker:'QQQ',reason:'technology/growth-heavy portfolio'};
+  if((validStocks||[]).some(p=>['VTI','VT'].includes(p.ticker)))return {ticker:'VTI',reason:'broad-market ETF portfolio'};
+  return {ticker:'SPY',reason:'default US large-cap benchmark'};
+}
 function getTotalInvested(){
   const holdingAmounts=state.portfolio.reduce((a,p)=>a+(p.investAmount||0),0);
   return holdingAmounts>0?holdingAmounts:(Number.isFinite(state.initialInvestment)?state.initialInvestment:10000);
