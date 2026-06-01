@@ -78,12 +78,25 @@ The project is designed as a Finance + Statistics portfolio intelligence platfor
 ```text
 PortfolioIQ/
 ├── index.html                          # Main frontend entry point
-├── portfolio_analytics_platform.html   # Compatibility entry point for the old local URL
+├── portfolio_analytics_platform.html   # Compatibility redirect for the old local URL
 ├── src/
 │   ├── css/
 │   │   └── styles.css                  # Extracted app styles
 │   └── js/
-│       └── app.js                      # Extracted vanilla JavaScript app logic
+│       ├── app.js                      # Main UI orchestration, events, tabs, screener, reports
+│       ├── state.js                    # Shared app state, constants, and stock metadata
+│       ├── data/
+│       │   └── yahoo.js                # Yahoo Finance data fetching helpers
+│       ├── ui/
+│       │   └── charts.js               # Chart.js rendering helpers
+│       ├── analytics/
+│       │   ├── concentrationRisk.js    # Hidden concentration and rebalance diagnostics
+│       │   ├── diagnosis.js            # Rule-based Portfolio Diagnosis engine
+│       │   ├── monteCarlo.js           # Monte Carlo projection models
+│       │   ├── riskMetrics.js          # Core return, risk, benchmark, and tail-risk math
+│       │   └── stressTesting.js        # Historical crisis-window stress testing
+│       └── utils/
+│           └── formatting.js           # Formatting, badges, and small utility helpers
 ├── docs/
 │   └── screenshots/                    # README screenshots
 ├── server.js                           # Local Node backend and Yahoo Finance proxy
@@ -92,7 +105,7 @@ PortfolioIQ/
 └── .gitignore                          # Local/generated file exclusions
 ```
 
-The app is still vanilla HTML/CSS/JavaScript. The refactor only separates the entry HTML, CSS, and JavaScript into clearer files; it does not introduce React, TypeScript, Vite, or any framework.
+The app is still vanilla HTML/CSS/JavaScript. The refactor separates the entry HTML, CSS, shared state, data access, analytics engines, chart rendering, and UI orchestration into clearer files; it does not introduce React, TypeScript, Vite, or any framework.
 
 ## How to Run Locally
 
@@ -121,7 +134,7 @@ npm start
 http://localhost:4173/index.html
 ```
 
-Use the `localhost` URL instead of opening the HTML file directly. The backend is needed because browsers block direct Yahoo Finance requests from frontend JavaScript. The older `/portfolio_analytics_platform.html` URL is still kept as a compatibility entry point.
+Use the `localhost` URL instead of opening the HTML file directly. The backend is needed because browsers block direct Yahoo Finance requests from frontend JavaScript. The older `/portfolio_analytics_platform.html` URL is still kept as a compatibility redirect.
 
 ## Screenshots
 

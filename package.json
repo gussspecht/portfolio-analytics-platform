@@ -1,6 +1,21 @@
 {
+  "name": "portfolioiq",
+  "version": "1.0.0",
+  "description": "Local-first portfolio analytics, risk intelligence, stress testing, Monte Carlo simulation, and rule-based portfolio diagnosis.",
+  "private": true,
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "check": "node -c server.js && for f in src/js/state.js src/js/utils/formatting.js src/js/data/yahoo.js src/js/ui/charts.js src/js/analytics/*.js src/js/app.js; do node -c \"$f\"; done"
   },
+  "keywords": [
+    "portfolio",
+    "finance",
+    "risk",
+    "statistics",
+    "monte-carlo",
+    "chartjs"
+  ],
+  "author": "Gustavo",
+  "license": "MIT",
   "dependencies": {}
 }
