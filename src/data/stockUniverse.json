@@ -273,6 +273,121 @@
       "s": "etf"
     },
     {
+      "t": "VOO",
+      "n": "Vanguard S&P 500 ETF",
+      "s": "etf"
+    },
+    {
+      "t": "IVV",
+      "n": "iShares Core S&P 500 ETF",
+      "s": "etf"
+    },
+    {
+      "t": "SCHD",
+      "n": "Schwab US Dividend Equity ETF",
+      "s": "etf"
+    },
+    {
+      "t": "VT",
+      "n": "Vanguard Total World Stock ETF",
+      "s": "etf"
+    },
+    {
+      "t": "VXUS",
+      "n": "Vanguard Total International Stock ETF",
+      "s": "etf"
+    },
+    {
+      "t": "VEA",
+      "n": "Vanguard FTSE Developed Markets ETF",
+      "s": "etf"
+    },
+    {
+      "t": "VWO",
+      "n": "Vanguard FTSE Emerging Markets ETF",
+      "s": "etf"
+    },
+    {
+      "t": "BND",
+      "n": "Vanguard Total Bond Market ETF",
+      "s": "etf"
+    },
+    {
+      "t": "TLT",
+      "n": "iShares 20+ Year Treasury Bond ETF",
+      "s": "etf"
+    },
+    {
+      "t": "SHY",
+      "n": "iShares 1-3 Year Treasury Bond ETF",
+      "s": "etf"
+    },
+    {
+      "t": "TIP",
+      "n": "iShares TIPS Bond ETF",
+      "s": "etf"
+    },
+    {
+      "t": "LQD",
+      "n": "iShares Investment Grade Corporate Bond ETF",
+      "s": "etf"
+    },
+    {
+      "t": "HYG",
+      "n": "iShares High Yield Corporate Bond ETF",
+      "s": "etf"
+    },
+    {
+      "t": "XLK",
+      "n": "Technology Select Sector SPDR",
+      "s": "etf"
+    },
+    {
+      "t": "XLE",
+      "n": "Energy Select Sector SPDR",
+      "s": "etf"
+    },
+    {
+      "t": "XLV",
+      "n": "Health Care Select Sector SPDR",
+      "s": "etf"
+    },
+    {
+      "t": "XLP",
+      "n": "Consumer Staples Select Sector SPDR",
+      "s": "etf"
+    },
+    {
+      "t": "XLI",
+      "n": "Industrial Select Sector SPDR",
+      "s": "etf"
+    },
+    {
+      "t": "XLU",
+      "n": "Utilities Select Sector SPDR",
+      "s": "etf"
+    },
+    {
+      "t": "XLY",
+      "n": "Consumer Discretionary Select Sector SPDR",
+      "s": "etf"
+    },
+    {
+      "t": "XLC",
+      "n": "Communication Services Select Sector SPDR",
+      "s": "etf"
+    },
+    {
+      "t": "SLV",
+      "n": "iShares Silver Trust",
+      "s": "etf"
+    },
+    {
+      "t": "DBC",
+      "n": "Invesco DB Commodity Index Tracking Fund",
+      "s": "etf"
+    },
+    {
       "t": "PETR4.SA",
       "n": "Petrobras (BR)",
       "s": "energy"
@@ -495,6 +610,51 @@
     {
       "t": "IVVB11.SA",
       "n": "S&P 500 Brazil ETF",
+      "s": "etf"
+    },
+    {
+      "t": "DIVO11.SA",
+      "n": "It Now IDIV Dividend ETF",
+      "s": "etf"
+    },
+    {
+      "t": "WRLD11.SA",
+      "n": "Investo FTSE Global ETF",
+      "s": "etf"
+    },
+    {
+      "t": "NASD11.SA",
+      "n": "Trend Nasdaq 100 ETF",
+      "s": "etf"
+    },
+    {
+      "t": "TECK11.SA",
+      "n": "It Now NYSE FANG+ ETF",
+      "s": "etf"
+    },
+    {
+      "t": "XINA11.SA",
+      "n": "Trend MSCI China ETF",
+      "s": "etf"
+    },
+    {
+      "t": "HASH11.SA",
+      "n": "Hashdex Nasdaq Crypto Index ETF",
+      "s": "etf"
+    },
+    {
+      "t": "GOLD11.SA",
+      "n": "Trend LBMA Gold ETF",
+      "s": "etf"
+    },
+    {
+      "t": "IMAB11.SA",
+      "n": "It Now IMA-B Bond ETF",
+      "s": "etf"
+    },
+    {
+      "t": "B5P211.SA",
+      "n": "It Now IMA-B5 P2 Bond ETF",
       "s": "etf"
     },
     {
@@ -1299,6 +1459,240 @@
       "h52": 25
     },
     {
+      "t": "VOO",
+      "n": "Vanguard S&P 500 ETF",
+      "s": "ETF",
+      "mc": 0,
+      "pe": 0,
+      "div": 0,
+      "h52": 0
+    },
+    {
+      "t": "IVV",
+      "n": "iShares Core S&P 500 ETF",
+      "s": "ETF",
+      "mc": 0,
+      "pe": 0,
+      "div": 0,
+      "h52": 0
+    },
+    {
+      "t": "SCHD",
+      "n": "Schwab US Dividend Equity ETF",
+      "s": "ETF",
+      "mc": 0,
+      "pe": 0,
+      "div": 0,
+      "h52": 0
+    },
+    {
+      "t": "VT",
+      "n": "Vanguard Total World Stock ETF",
+      "s": "ETF",
+      "mc": 0,
+      "pe": 0,
+      "div": 0,
+      "h52": 0
+    },
+    {
+      "t": "VXUS",
+      "n": "Vanguard Total International Stock ETF",
+      "s": "ETF",
+      "mc": 0,
+      "pe": 0,
+      "div": 0,
+      "h52": 0
+    },
+    {
+      "t": "VEA",
+      "n": "Vanguard FTSE Developed Markets ETF",
+      "s": "ETF",
+      "mc": 0,
+      "pe": 0,
+      "div": 0,
+      "h52": 0
+    },
+    {
+      "t": "VWO",
+      "n": "Vanguard FTSE Emerging Markets ETF",
+      "s": "ETF",
+      "mc": 0,
+      "pe": 0,
+      "div": 0,
+      "h52": 0
+    },
+    {
+      "t": "BND",
+      "n": "Vanguard Total Bond Market ETF",
+      "s": "ETF",
+      "mc": 0,
+      "pe": 0,
+      "div": 0,
+      "h52": 0
+    },
+    {
+      "t": "TLT",
+      "n": "iShares 20+ Year Treasury Bond ETF",
+      "s": "ETF",
+      "mc": 0,
+      "pe": 0,
+      "div": 0,
+      "h52": 0
+    },
+    {
+      "t": "SHY",
+      "n": "iShares 1-3 Year Treasury Bond ETF",
+      "s": "ETF",
+      "mc": 0,
+      "pe": 0,
+      "div": 0,
+      "h52": 0
+    },
+    {
+      "t": "TIP",
+      "n": "iShares TIPS Bond ETF",
+      "s": "ETF",
+      "mc": 0,
+      "pe": 0,
+      "div": 0,
+      "h52": 0
+    },
+    {
+      "t": "LQD",
+      "n": "iShares Investment Grade Corporate Bond ETF",
+      "s": "ETF",
+      "mc": 0,
+      "pe": 0,
+      "div": 0,
+      "h52": 0
+    },
+    {
+      "t": "HYG",
+      "n": "iShares High Yield Corporate Bond ETF",
+      "s": "ETF",
+      "mc": 0,
+      "pe": 0,
+      "div": 0,
+      "h52": 0
+    },
+    {
+      "t": "VNQ",
+      "n": "Vanguard Real Estate ETF",
+      "s": "ETF",
+      "mc": 0,
+      "pe": 0,
+      "div": 0,
+      "h52": 0
+    },
+    {
+      "t": "SLV",
+      "n": "iShares Silver Trust",
+      "s": "ETF",
+      "mc": 0,
+      "pe": 0,
+      "div": 0,
+      "h52": 0
+    },
+    {
+      "t": "DBC",
+      "n": "Invesco DB Commodity Index Tracking Fund",
+      "s": "ETF",
+      "mc": 0,
+      "pe": 0,
+      "div": 0,
+      "h52": 0
+    },
+    {
+      "t": "ARKK",
+      "n": "ARK Innovation ETF",
+      "s": "ETF",
+      "mc": 0,
+      "pe": 0,
+      "div": 0,
+      "h52": 0
+    },
+    {
+      "t": "XLF",
+      "n": "Financial Select Sector SPDR",
+      "s": "ETF",
+      "mc": 0,
+      "pe": 0,
+      "div": 0,
+      "h52": 0
+    },
+    {
+      "t": "XLK",
+      "n": "Technology Select Sector SPDR",
+      "s": "ETF",
+      "mc": 0,
+      "pe": 0,
+      "div": 0,
+      "h52": 0
+    },
+    {
+      "t": "XLE",
+      "n": "Energy Select Sector SPDR",
+      "s": "ETF",
+      "mc": 0,
+      "pe": 0,
+      "div": 0,
+      "h52": 0
+    },
+    {
+      "t": "XLV",
+      "n": "Health Care Select Sector SPDR",
+      "s": "ETF",
+      "mc": 0,
+      "pe": 0,
+      "div": 0,
+      "h52": 0
+    },
+    {
+      "t": "XLP",
+      "n": "Consumer Staples Select Sector SPDR",
+      "s": "ETF",
+      "mc": 0,
+      "pe": 0,
+      "div": 0,
+      "h52": 0
+    },
+    {
+      "t": "XLI",
+      "n": "Industrial Select Sector SPDR",
+      "s": "ETF",
+      "mc": 0,
+      "pe": 0,
+      "div": 0,
+      "h52": 0
+    },
+    {
+      "t": "XLU",
+      "n": "Utilities Select Sector SPDR",
+      "s": "ETF",
+      "mc": 0,
+      "pe": 0,
+      "div": 0,
+      "h52": 0
+    },
+    {
+      "t": "XLY",
+      "n": "Consumer Discretionary Select Sector SPDR",
+      "s": "ETF",
+      "mc": 0,
+      "pe": 0,
+      "div": 0,
+      "h52": 0
+    },
+    {
+      "t": "XLC",
+      "n": "Communication Services Select Sector SPDR",
+      "s": "ETF",
+      "mc": 0,
+      "pe": 0,
+      "div": 0,
+      "h52": 0
+    },
+    {
       "t": "BOVA11.SA",
       "n": "iShares Ibovespa ETF",
       "s": "ETF",
@@ -1324,6 +1718,87 @@
       "pe": 0,
       "div": 0,
       "h52": 380
+    },
+    {
+      "t": "DIVO11.SA",
+      "n": "It Now IDIV Dividend ETF",
+      "s": "ETF",
+      "mc": 0,
+      "pe": 0,
+      "div": 0,
+      "h52": 0
+    },
+    {
+      "t": "WRLD11.SA",
+      "n": "Investo FTSE Global ETF",
+      "s": "ETF",
+      "mc": 0,
+      "pe": 0,
+      "div": 0,
+      "h52": 0
+    },
+    {
+      "t": "NASD11.SA",
+      "n": "Trend Nasdaq 100 ETF",
+      "s": "ETF",
+      "mc": 0,
+      "pe": 0,
+      "div": 0,
+      "h52": 0
+    },
+    {
+      "t": "TECK11.SA",
+      "n": "It Now NYSE FANG+ ETF",
+      "s": "ETF",
+      "mc": 0,
+      "pe": 0,
+      "div": 0,
+      "h52": 0
+    },
+    {
+      "t": "XINA11.SA",
+      "n": "Trend MSCI China ETF",
+      "s": "ETF",
+      "mc": 0,
+      "pe": 0,
+      "div": 0,
+      "h52": 0
+    },
+    {
+      "t": "HASH11.SA",
+      "n": "Hashdex Nasdaq Crypto Index ETF",
+      "s": "ETF",
+      "mc": 0,
+      "pe": 0,
+      "div": 0,
+      "h52": 0
+    },
+    {
+      "t": "GOLD11.SA",
+      "n": "Trend LBMA Gold ETF",
+      "s": "ETF",
+      "mc": 0,
+      "pe": 0,
+      "div": 0,
+      "h52": 0
+    },
+    {
+      "t": "IMAB11.SA",
+      "n": "It Now IMA-B Bond ETF",
+      "s": "ETF",
+      "mc": 0,
+      "pe": 0,
+      "div": 0,
+      "h52": 0
+    },
+    {
+      "t": "B5P211.SA",
+      "n": "It Now IMA-B5 P2 Bond ETF",
+      "s": "ETF",
+      "mc": 0,
+      "pe": 0,
+      "div": 0,
+      "h52": 0
     }
   ]
 }

@@ -209,7 +209,6 @@ async function addTickerFromInput(){
   if(!ticker){errEl.innerHTML='<div class="error-msg">Please enter a ticker symbol</div>';return;}
   if(state.portfolio.find(p=>p.ticker===ticker)){errEl.innerHTML='<div class="error-msg">'+ticker+' is already in your portfolio</div>';return;}
 
-  const shouldNormalize = !weightRaw;
   const weight = weightRaw ? parseFloat(weightRaw) : defaultNewWeight();
   const investAmount = investRaw ? parseFloat(investRaw) : 0;
 
@@ -223,7 +222,6 @@ async function addTickerFromInput(){
   const name = info ? info.n : ticker;
 
   state.portfolio.push({ticker, name, weight, investAmount, data});
-  if(shouldNormalize)normalizePortfolioWeights();
   computeMetrics(ticker);
 
   errEl.innerHTML='';
@@ -279,19 +277,9 @@ function renderWeightSliders(){
 function updateWeight(i,val){
   if(!state.portfolio[i])return;
   val=clamp(isFinite(val)?val:0,0,100);
-  if(state.portfolio.length===1){
-    state.portfolio[i].weight=100;
-  } else {
-    const remaining=100-val;
-    const otherIdx=state.portfolio.map((_,idx)=>idx).filter(idx=>idx!==i);
-    const otherTotal=otherIdx.reduce((a,idx)=>a+(state.portfolio[idx].weight||0),0);
-    state.portfolio[i].weight=val;
-    if(otherTotal>0){
-      otherIdx.forEach(idx=>{state.portfolio[idx].weight=(state.portfolio[idx].weight||0)/otherTotal*remaining;});
-    } else {
-      otherIdx.forEach(idx=>{state.portfolio[idx].weight=remaining/otherIdx.length;});
-    }
-  }
+  // Keep allocation editing independent: changing one holding should not silently
+  // rewrite every other weight. Users can temporarily work above or below 100%.
+  state.portfolio[i].weight=val;
   syncWeightControls();
   updateWeightSum();
   renderOverviewMetrics();
@@ -314,13 +302,33 @@ function updateWeightSum(){
   const total=state.portfolio.reduce((a,p)=>a+(p.weight||0),0);
   const el=document.getElementById('weight-sum-val');
   const bar=document.getElementById('weight-sum-bar');
-  if(el){el.textContent=total+'%';el.style.color=Math.abs(total-100)<2?'var(--green)':'var(--amber)'}
-  if(bar){bar.style.width=Math.min(total,100)+'%';bar.style.background=Math.abs(total-100)<2?'var(--green)':'var(--amber)'}
+  const status=document.getElementById('weight-sum-status');
+  const isBalanced=Math.abs(total-100)<0.05;
+  const isOver=total>100;
+  const tone=isBalanced?'var(--green)':isOver?'var(--red)':'var(--amber)';
+  if(el){el.textContent=total.toFixed(1)+'%';el.style.color=tone;}
+  if(bar){bar.style.width=Math.min(Math.max(total,0),100)+'%';bar.style.background=tone;}
+  if(status){
+    status.textContent=isBalanced
+      ?'Allocation is balanced.'
+      :isOver
+        ?`${(total-100).toFixed(1)}% above the target.`
+        :`${(100-total).toFixed(1)}% remains unallocated.`;
+    status.style.color=tone;
+  }
+}
+
+function normalizePortfolioAllocation(){
+  if(!state.portfolio.length)return;
+  normalizePortfolioWeights();
+  syncWeightControls();
+  updateWeightSum();
+  renderOverviewMetrics();
+  saveState();
 }
 
 function removeStock(i){
   state.portfolio.splice(i,1);
-  normalizePortfolioWeights();
   renderWeightSliders();
   renderOverviewMetrics();
   saveState();
@@ -910,9 +918,11 @@ function metricsFromPriceRows(ticker,rows,period){
   }
   const annReturn=annualizedReturn(series);
   const annVol=annualizedVolatility(series);
+  const downsideSeries=series.map(x=>({date:x.date,return:Math.min(0,x.return)}));
+  const downsideVol=annualizedVolatility(downsideSeries);
   const maxDD=maxDrawdown(series);
   return{
-    ticker,period,source:'live',annReturn,annVol,maxDD,
+    ticker,period,source:'live',annReturn,annVol,downsideVol,maxDD,
     cumulative:compoundReturn(series),
     dataPoints:series.length,
     skipped,
@@ -928,6 +938,7 @@ function getScreenerMetric(ticker,period,rfr){
       annReturn:portfolioMetric.annReturn,
       annVol:portfolioMetric.annVol,
       sharpe:portfolioMetric.annVol>0?(portfolioMetric.annReturn-rfr)/portfolioMetric.annVol:0,
+      sortino:sortinoRatio(portfolioMetric.returnSeries,portfolioMetric.annReturn,rfr),
       dataPoints:portfolioMetric.returnSeries.length,
     };
   }
@@ -936,6 +947,7 @@ function getScreenerMetric(ticker,period,rfr){
     return{
       ...cached,
       sharpe:cached.annVol>0?(cached.annReturn-rfr)/cached.annVol:0,
+      sortino:cached.downsideVol>0?(cached.annReturn-rfr)/cached.downsideVol:0,
     };
   }
   return cached||null;
@@ -977,11 +989,13 @@ function buildScreenerResults(candidates,rfr,maxRisk,period){
     const annReturn=metric?.annReturn;
     const annVol=metric?.annVol;
     const sharpe=Number.isFinite(metric?.sharpe)?metric.sharpe:(annVol>0?(annReturn-rfr)/annVol:null);
+    const sortino=Number.isFinite(metric?.sortino)?metric.sortino:null;
     return{
       ...s,
       annReturn:Number.isFinite(annReturn)?annReturn:null,
       annVol:Number.isFinite(annVol)?annVol:null,
       sharpe:Number.isFinite(sharpe)?sharpe:null,
+      sortino:Number.isFinite(sortino)?sortino:null,
       metricSource:metric?.source||'unavailable',
       metricError:metric?.error||'',
       dataPoints:metric?.dataPoints||0,
@@ -1001,6 +1015,7 @@ function sortScreenerResults(results,sortBy){
   else if(sortBy==='riskLow') results.sort((a,b)=>numeric(a.annVol,Infinity)-numeric(b.annVol,Infinity));
   else if(sortBy==='riskHigh') results.sort((a,b)=>numeric(b.annVol)-numeric(a.annVol));
   else if(sortBy==='sharpe') results.sort((a,b)=>numeric(b.sharpe)-numeric(a.sharpe));
+  else if(sortBy==='sortino') results.sort((a,b)=>numeric(b.sortino)-numeric(a.sortino));
   else if(sortBy==='return') results.sort((a,b)=>numeric(b.annReturn)-numeric(a.annReturn));
   else results.sort((a,b)=>numeric(b.mc)-numeric(a.mc));
   return results;
@@ -1019,32 +1034,47 @@ function renderScreenerTable(results,{loading=false,progressText='',period='2y'}
     el.innerHTML='<div class="empty-state">No stocks match your criteria</div>';
     return;
   }
-  let html=`<div class="card">`;
+  let html=`<div class="card screener-results-card">`;
   if(loading)html+=`<div class="loading" style="margin-bottom:12px"><div class="spinner"></div>${escapeHtml(progressText||'Fetching live historical metrics...')}</div>`;
-  html+=`<table><thead><tr><th>Ticker</th><th>Company</th><th>Sector</th><th>Market Cap</th><th>Ann. Return</th><th>Risk</th><th>Sharpe</th><th>Data</th><th>P/E</th><th>Dividend</th><th>Action</th></tr></thead><tbody>`;
+  html+=`<table><thead><tr><th>Ticker</th><th>Company</th><th>Country</th><th>Sector</th><th>Market Cap</th><th>Ann. Return</th><th>Risk</th><th>Sharpe</th><th>Sortino</th><th>Data</th><th>P/E</th><th>Dividend</th><th>Action</th></tr></thead><tbody>`;
   results.forEach(s=>{
-    const mc=s.mc>=1e12?'$'+(s.mc/1e12).toFixed(1)+'T':s.mc>=1e9?'$'+(s.mc/1e9).toFixed(0)+'B':'$'+(s.mc/1e6).toFixed(0)+'M';
+    const mc=s.s==='ETF'?'—':s.mc>=1e12?'$'+(s.mc/1e12).toFixed(1)+'T':s.mc>=1e9?'$'+(s.mc/1e9).toFixed(0)+'B':'$'+(s.mc/1e6).toFixed(0)+'M';
     const riskBadge=s.annVol==null?null:getVolatilityBadge(s.annVol);
     html+=`<tr>
       <td class="mono" style="color:var(--accent)">${s.t}</td>
       <td>${s.n}</td>
+      <td>${s.country}</td>
       <td><span class="tag" style="background:var(--bg4);color:var(--text2)">${s.s}</span></td>
       <td class="mono">${mc}</td>
       <td class="mono ${s.annReturn==null?'neu':s.annReturn>=0?'pos':'neg'}">${s.annReturn==null?'—':fmtPct(s.annReturn*100)}</td>
       <td>${riskBadge?metricBadge(fmtPctPlain(s.annVol*100)+' '+riskBadge.label,riskBadge.tone):'<span class="neu">—</span>'}</td>
       <td class="mono ${s.sharpe==null?'neu':s.sharpe>=1?'pos':s.sharpe>=0.5?'neu':'neg'}">${s.sharpe==null?'—':fmtNum(s.sharpe)}</td>
+      <td class="mono ${s.sortino==null?'neu':s.sortino>=1.5?'pos':s.sortino>=0.75?'neu':'neg'}">${s.sortino==null?'—':fmtNum(s.sortino)}</td>
       <td>${metricSourceBadge(s.metricSource,s.metricError)}${s.dataPoints?`<div class="footnote">${s.dataPoints} days</div>`:''}</td>
       <td class="mono">${s.pe||'—'}</td>
       <td class="mono ${s.div>2?'pos':''}">${s.div?s.div.toFixed(1)+'%':'—'}</td>
       <td><button class="btn btn-outline btn-sm" onclick="quickAddFromScreener('${s.t}')">+ Add</button> <button class="btn btn-ghost btn-sm" onclick="addToWatchlist('${s.t}')">Watch</button></td>
     </tr>`;
   });
-  html+=`</tbody></table><div class="footnote">Return, risk, and Sharpe use live Yahoo historical data for ${escapeHtml(periodLabel(period))} when available and are cached locally for 24 hours. Rows marked No Data could not be calculated reliably.</div></div>`;
+  html+=`</tbody></table><div class="footnote">Return, risk, Sharpe, and Sortino use live Yahoo historical data for ${escapeHtml(periodLabel(period))} when available and are cached locally for 24 hours. Country identifies the listing market. Rows marked No Data could not be calculated reliably.</div></div>`;
   el.innerHTML=html;
 }
 
+function screenerCountry(ticker){
+  return String(ticker).toUpperCase().endsWith('.SA')?'Brazil':'United States';
+}
+
+function getSelectedScreenerSectors(){
+  return new Set([...document.querySelectorAll('#screen-sector-options input:checked')].map(input=>input.value));
+}
+
+function setAllScreenerSectors(selected){
+  document.querySelectorAll('#screen-sector-options input').forEach(input=>{input.checked=selected;});
+}
+
 async function runScreener(){
-  const sector=document.getElementById('screen-sector').value;
+  const sectors=getSelectedScreenerSectors();
+  const country=document.getElementById('screen-country').value;
   const minCap=parseFloat(document.getElementById('screen-cap').value)||0;
   const maxRisk=parseFloat(document.getElementById('screen-risk').value)||999;
   const sortBy=document.getElementById('screen-sort').value;
@@ -1054,8 +1084,9 @@ async function runScreener(){
   if(btn){btn.disabled=true;btn.textContent='Fetching live metrics...';}
   await loadScreenerUniverse();
 
-  const candidates=SCREENER_DATA.filter(s=>{
-    if(sector&&s.s!==sector)return false;
+  const candidates=SCREENER_DATA.map(s=>({...s,country:screenerCountry(s.t)})).filter(s=>{
+    if(!sectors.size||!sectors.has(s.s))return false;
+    if(country&&s.country!==country)return false;
     if(s.mc<minCap)return false;
     return true;
   });
@@ -1082,7 +1113,6 @@ async function quickAddFromScreener(ticker,name){
   const data=await fetchYahooData(ticker,period);
   if(data&&data.length>5){
     state.portfolio.push({ticker,name:displayName,weight:defaultNewWeight(),investAmount:0,data});
-    normalizePortfolioWeights();
     computeMetrics(ticker);
     renderWeightSliders();
     renderOverviewMetrics();
@@ -1188,7 +1218,6 @@ async function quickImportAlloc(ticker,weight){
   const info=STOCKS_DB.find(s=>s.t===ticker);
   if(data&&data.length>5){
     state.portfolio.push({ticker,name:info?info.n:ticker,weight,investAmount:0,data});
-    normalizePortfolioWeights();
     computeMetrics(ticker);
     renderWeightSliders();
     renderOverviewMetrics();

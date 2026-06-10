@@ -22,7 +22,7 @@ const state = {
 
 const RISK_LABELS = ['Very Low','Low','Moderate','High','Very High'];
 const STORAGE_KEY = 'portfolioiq:v2';
-const SCREENER_CACHE_KEY = 'portfolioiq:screenerMetrics:v1';
+const SCREENER_CACHE_KEY = 'portfolioiq:screenerMetrics:v2';
 const SCREENER_CACHE_MS = 24 * 60 * 60 * 1000;
 
 // ========== STOCK UNIVERSE ==========

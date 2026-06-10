@@ -91,6 +91,11 @@ tr:hover td{background:var(--bg3)}
 /* Sector pills */
 .sector-pill{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:500;cursor:pointer;border:1px solid transparent;transition:all 0.15s;user-select:none}
 .sector-pill.sel{border-color:currentColor;opacity:1}.sector-pill:not(.sel){opacity:.5}
+.screener-sector-grid{display:flex;flex-wrap:wrap;gap:7px}
+.screener-check{display:inline-flex;align-items:center;gap:6px;margin:0;padding:6px 9px;background:var(--bg3);border:1px solid var(--border2);border-radius:6px;color:var(--text2);font-size:11px;cursor:pointer;user-select:none}
+.screener-check:has(input:checked){border-color:var(--accent);color:var(--text);background:var(--accent-glow)}
+.screener-check input{width:auto;margin:0;accent-color:var(--accent)}
+.screener-results-card{overflow-x:auto}
 
 /* Risk gauge */
 .risk-bar-wrap{height:8px;background:var(--bg4);border-radius:4px;overflow:hidden;margin:6px 0}

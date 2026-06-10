@@ -224,6 +224,10 @@
               <span class="mono" id="weight-sum-val" style="font-weight:600">0%</span>
             </div>
             <div class="prog-bar"><div class="prog-fill" id="weight-sum-bar" style="background:var(--green);width:0%"></div></div>
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:8px">
+              <span class="footnote" id="weight-sum-status">100.0% remains unallocated.</span>
+              <button class="btn btn-outline btn-sm" onclick="normalizePortfolioAllocation()">Normalize to 100%</button>
+            </div>
           </div>
         </div>
 
@@ -290,19 +294,11 @@
       <h3>Stock Screener</h3>
       <div class="grid-4 mb12">
         <div>
-          <label>Sector</label>
-          <select id="screen-sector">
-            <option value="">All Sectors</option>
-            <option value="Technology">Technology</option>
-            <option value="Healthcare">Healthcare</option>
-            <option value="Financial Services">Financial Services</option>
-            <option value="Consumer Cyclical">Consumer Cyclical</option>
-            <option value="Consumer Defensive">Consumer Defensive</option>
-            <option value="Energy">Energy</option>
-            <option value="Industrials">Industrials</option>
-            <option value="Materials">Materials</option>
-            <option value="Utilities">Utilities</option>
-            <option value="ETF">ETF</option>
+          <label>Country / Market</label>
+          <select id="screen-country">
+            <option value="">All Countries</option>
+            <option value="United States">United States</option>
+            <option value="Brazil">Brazil</option>
           </select>
         </div>
         <div>
@@ -329,11 +325,34 @@
             <option value="riskLow">Risk: Low to High</option>
             <option value="riskHigh">Risk: High to Low</option>
             <option value="sharpe">Sharpe Ratio</option>
+            <option value="sortino">Sortino Ratio</option>
             <option value="return">Expected Return</option>
             <option value="peRatio">P/E Ratio</option>
             <option value="dividendYield">Dividend Yield</option>
             <option value="52wHigh">52W High</option>
           </select>
+        </div>
+      </div>
+      <div class="mb12">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:7px">
+          <label style="margin:0">Sectors</label>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-ghost btn-sm" type="button" onclick="setAllScreenerSectors(true)">Select all</button>
+            <button class="btn btn-ghost btn-sm" type="button" onclick="setAllScreenerSectors(false)">Clear</button>
+          </div>
+        </div>
+        <div class="screener-sector-grid" id="screen-sector-options">
+          <label class="screener-check"><input type="checkbox" value="Technology" checked/> Technology</label>
+          <label class="screener-check"><input type="checkbox" value="Healthcare" checked/> Healthcare</label>
+          <label class="screener-check"><input type="checkbox" value="Financial Services" checked/> Financial Services</label>
+          <label class="screener-check"><input type="checkbox" value="Consumer Cyclical" checked/> Consumer Cyclical</label>
+          <label class="screener-check"><input type="checkbox" value="Consumer Defensive" checked/> Consumer Defensive</label>
+          <label class="screener-check"><input type="checkbox" value="Energy" checked/> Energy</label>
+          <label class="screener-check"><input type="checkbox" value="Industrials" checked/> Industrials</label>
+          <label class="screener-check"><input type="checkbox" value="Materials" checked/> Materials</label>
+          <label class="screener-check"><input type="checkbox" value="Utilities" checked/> Utilities</label>
+          <label class="screener-check"><input type="checkbox" value="Communication Services" checked/> Communication</label>
+          <label class="screener-check"><input type="checkbox" value="ETF" checked/> ETFs</label>
         </div>
       </div>
       <button class="btn btn-primary" onclick="runScreener()">🔍 Screen Stocks</button>
